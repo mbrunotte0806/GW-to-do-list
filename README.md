@@ -1,4 +1,4 @@
-# GW-Tasks – Team-Aufgabenliste
+# GW to-do list – Team-Aufgabenliste
 
 Einfache, moderne Team-Aufgabenliste für Grunwald Flächenheizsysteme als einzelne HTML-Datei (HTML, CSS und JavaScript in einer Datei, keine Abhängigkeiten).
 
