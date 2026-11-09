@@ -73,7 +73,7 @@
     border-radius: 999px;
   }
 
-  .inner { width: min(1180px, 100% - 40px); margin: 0 auto; }
+  .inner { width: min(1560px, 100% - 40px); margin: 0 auto; }
 
   /* ---------- Layout ---------- */
   main { flex: 1; padding: 36px 0 48px; }
@@ -84,9 +84,9 @@
   .page-title h1 { font-size: 28px; font-weight: 700; color: var(--navy); margin-left: 22px; }
   .page-title .user-pick { margin-left: auto; }
 
-  .grid { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
+  .grid { display: grid; grid-template-columns: 330px 1fr; gap: 24px; align-items: start; }
   .grid > * { min-width: 0; }
-  @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 1250px) { .grid { grid-template-columns: 1fr; } }
 
   .card {
     background: var(--card);
@@ -144,11 +144,14 @@
   .btn-primary:hover { background: var(--green-dark); }
   .btn-secondary { background: #eef1f4; color: var(--text); width: 100%; justify-content: center; margin-top: 8px; }
   .btn-secondary:hover { background: #e2e7eb; }
-  .btn-edit {
+  .btn-edit, .btn-delete {
+    width: 32px; height: 30px; padding: 0; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
     background: transparent; border: 1px solid var(--border); color: var(--text-muted);
-    padding: 6px 10px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 13px;
-    white-space: nowrap; margin-right: 6px; transition: all .15s;
+    border-radius: 6px; cursor: pointer; font: inherit; font-size: 14px;
+    transition: all .15s;
   }
+  .btn-edit { margin-right: 6px; }
   .btn-edit:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
 
   /* Personenauswahl im Kopf */
@@ -210,18 +213,6 @@
   tr.editing { background: var(--green-light) !important; }
   .btn-ghost { background: transparent; color: var(--text-muted); padding: 6px 10px; font-size: 13px; }
   .btn-ghost:hover { color: var(--red); background: #fdf1f0; }
-  .btn-delete {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font: inherit;
-    font-size: 13px;
-    white-space: nowrap;
-    transition: all .15s;
-  }
   .btn-delete:hover { border-color: var(--red); color: var(--red); background: #fdf1f0; }
 
   .error { color: var(--red); font-size: 13px; margin-top: -8px; margin-bottom: 12px; display: none; }
@@ -241,8 +232,8 @@
 
   /* ---------- Table ---------- */
   .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 900px; }
-  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
+  th, td { text-align: left; padding: 12px 11px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   th {
     font-size: 12px;
     text-transform: uppercase;
@@ -255,7 +246,7 @@
   tbody tr { transition: background .12s; }
   tbody tr:hover { background: #f4f8f6; }
   tr.done td.task { text-decoration: line-through; color: var(--text-muted); }
-  td.task { font-weight: 600; color: var(--navy); min-width: 260px; }
+  td.task { font-weight: 600; color: var(--navy); min-width: 210px; }
   td.owner { white-space: nowrap; }
   td.owner .avatar {
     display: inline-flex; align-items: center; justify-content: center;
@@ -283,7 +274,7 @@
 
   select.inline-status {
     font: inherit; font-size: 12px; font-weight: 600;
-    padding: 4px 26px 4px 10px;
+    padding: 4px 23px 4px 9px;
     border: 1px solid transparent;
     border-radius: 999px;
     cursor: pointer;
@@ -602,8 +593,8 @@
           '<td class="deadline ' + dl.cls + '">' + formatDate(t.deadline) + (dl.hint ? '<small>' + dl.hint + '</small>' : '') + '</td>' +
           '<td><span class="pill prio-' + t.prio + '">' + PRIO_LABEL[t.prio] + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap">' +
-            '<button type="button" class="btn-edit" data-action="edit" title="Aufgabe bearbeiten">✎ Bearbeiten</button>' +
-            '<button type="button" class="btn-delete" data-action="delete" title="Aufgabe löschen">🗑 Löschen</button>' +
+            '<button type="button" class="btn-edit" data-action="edit" title="Aufgabe bearbeiten" aria-label="Aufgabe bearbeiten">✎</button>' +
+            '<button type="button" class="btn-delete" data-action="delete" title="Aufgabe löschen" aria-label="Aufgabe löschen">✕</button>' +
           '</td>' +
         '</tr>'
       );
