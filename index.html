@@ -29,6 +29,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
 
   body {
     font-family: "Merriweather Sans", "Segoe UI", Arial, sans-serif;
@@ -161,6 +162,39 @@
   .btn:active { transform: translateY(1px); }
   .btn-primary { background: var(--green); color: #fff; width: 100%; justify-content: center; }
   .btn-primary:hover { background: var(--green-dark); }
+  .btn-secondary { background: #eef1f4; color: var(--text); width: 100%; justify-content: center; margin-top: 8px; }
+  .btn-secondary:hover { background: #e2e7eb; }
+  .btn-edit {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 6px 10px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 13px;
+    white-space: nowrap; margin-right: 6px; transition: all .15s;
+  }
+  .btn-edit:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
+  /* Personenauswahl im Kopf */
+  .user-pick { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--navy); }
+  .user-pick select {
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px;
+    background: #fff; color: var(--green); cursor: pointer;
+  }
+  .user-pick select:focus { outline: none; box-shadow: 0 0 0 3px rgba(32,109,86,.15); }
+  .user-pick.unset select { border-color: var(--amber); color: var(--amber); }
+
+  /* Notizen */
+  .field textarea {
+    width: 100%; font: inherit; color: var(--text);
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; resize: vertical; min-height: 64px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field textarea:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(32,109,86,.15); }
+  .task-notes { display: block; font-size: 12px; font-weight: 400; color: var(--text-muted); margin-top: 3px; max-width: 320px; }
+  .creator { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: .04em; }
+
+  /* Bearbeiten-Modus */
+  .card.editing { border-color: var(--green); box-shadow: 0 0 0 3px rgba(32,109,86,.12), var(--shadow); }
+  tr.editing { background: var(--green-light) !important; }
   .btn-ghost { background: transparent; color: var(--text-muted); padding: 6px 10px; font-size: 13px; }
   .btn-ghost:hover { color: var(--red); background: #fdf1f0; }
   .btn-delete {
@@ -194,7 +228,7 @@
 
   /* ---------- Table ---------- */
   .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
   th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   th {
     font-size: 12px;
@@ -208,13 +242,13 @@
   tbody tr { transition: background .12s; }
   tbody tr:hover { background: #f4f8f6; }
   tr.done td.task { text-decoration: line-through; color: var(--text-muted); }
-  td.task { font-weight: 600; color: var(--navy); }
+  td.task { font-weight: 600; color: var(--navy); min-width: 260px; }
   td.owner { white-space: nowrap; }
   td.owner .avatar {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%;
+    min-width: 28px; height: 28px; padding: 0 9px; border-radius: 999px;
     background: var(--green-light); color: var(--green);
-    font-size: 12px; font-weight: 700; margin-right: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: .03em;
   }
   td.deadline { white-space: nowrap; }
   td.deadline.overdue { color: var(--red); font-weight: 600; }
@@ -285,6 +319,9 @@
       </span>
     </a>
     <div class="header-right">
+      <label class="user-pick" id="userPick" for="currentUser">Ich bin
+        <select id="currentUser" title="Kürzel für neu erfasste Aufgaben"></select>
+      </label>
       <span class="badge-count" id="openCount">0 offen</span>
     </div>
   </div>
@@ -300,7 +337,7 @@
     <div class="grid">
       <!-- Formular -->
       <section class="card">
-        <div class="card-head"><h2>Neue Aufgabe</h2></div>
+        <div class="card-head"><h2 id="formTitle">Neue Aufgabe</h2></div>
         <div class="card-body">
           <form id="taskForm" novalidate>
             <div class="field">
@@ -309,7 +346,7 @@
             </div>
             <div class="field">
               <label for="owner">Zuständigkeit</label>
-              <input type="text" id="owner" placeholder="Name der zuständigen Person" required>
+              <select id="owner" required></select>
             </div>
             <div class="row-2">
               <div class="field">
@@ -333,8 +370,13 @@
               <label for="deadline">Deadline</label>
               <input type="date" id="deadline" required>
             </div>
+            <div class="field">
+              <label for="notes">Notizen <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+              <textarea id="notes" placeholder="Details, Ansprechpartner, offene Punkte …"></textarea>
+            </div>
             <div class="error" id="formError">Bitte alle Felder ausfüllen.</div>
-            <button type="submit" class="btn btn-primary">＋ Aufgabe hinzufügen</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">＋ Aufgabe hinzufügen</button>
+            <button type="button" class="btn btn-secondary" id="cancelEdit" hidden>Abbrechen</button>
           </form>
         </div>
       </section>
@@ -372,6 +414,7 @@
                 <tr>
                   <th>Aufgabe</th>
                   <th>Zuständig</th>
+                  <th>Erfasst von</th>
                   <th>Status</th>
                   <th>Deadline</th>
                   <th>Prio</th>
@@ -401,11 +444,17 @@
 <script>
 (function () {
   const STORAGE_KEY = 'grunwald-team-tasks';
+  const USER_KEY    = 'grunwald-team-user';
+
+  // Kürzel des Teams, alphabetisch
+  const PEOPLE = ['CH', 'JB', 'JBS', 'MB', 'NW'];
+
   const STATUS_LABEL = { offen: 'Offen', bearbeitung: 'In Bearbeitung', erledigt: 'Erledigt' };
   const PRIO_LABEL   = { hoch: 'Hoch', mittel: 'Mittel', niedrig: 'Niedrig' };
   const PRIO_RANK    = { hoch: 0, mittel: 1, niedrig: 2 };
 
   let tasks = load();
+  let editId = null;            // null = neue Aufgabe, sonst die bearbeitete id
 
   const $ = id => document.getElementById(id);
   const form = $('taskForm');
@@ -419,13 +468,16 @@
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); } catch (e) {}
   }
+  function loadUser() {
+    try { return localStorage.getItem(USER_KEY) || ''; } catch (e) { return ''; }
+  }
+  function saveUser(v) {
+    try { localStorage.setItem(USER_KEY, v); } catch (e) {}
+  }
 
   // --- Hilfsfunktionen ---
   function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-  }
-  function initials(name) {
-    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
   function formatDate(iso) {
     if (!iso) return '–';
@@ -445,6 +497,37 @@
     if (n <= 3)  return { cls: 'soon', hint: 'in ' + n + (n === 1 ? ' Tag' : ' Tagen') };
     return { cls: '', hint: 'in ' + n + ' Tagen' };
   }
+  function shorten(s, max) {
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    return s.length > max ? s.slice(0, max - 1) + '…' : s;
+  }
+
+  // --- Auswahllisten aufbauen ---
+  function fillPeopleSelects() {
+    const user = $('currentUser');
+    user.innerHTML = '<option value="">–</option>' +
+      PEOPLE.map(p => '<option value="' + p + '">' + p + '</option>').join('');
+    user.value = loadUser();
+    markUserPick();
+
+    $('owner').innerHTML = '<option value="">Bitte wählen</option>' +
+      PEOPLE.map(p => '<option value="' + p + '">' + p + '</option>').join('');
+  }
+  function markUserPick() {
+    $('userPick').classList.toggle('unset', !$('currentUser').value);
+  }
+  // Ältere Aufgaben können eine Zuständigkeit außerhalb der Kürzelliste haben.
+  // Damit sie beim Bearbeiten nicht verloren geht, wird sie vorübergehend ergänzt.
+  function ensureOwnerOption(value) {
+    if (!value) return;
+    const sel = $('owner');
+    if (!Array.prototype.some.call(sel.options, o => o.value === value)) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value + ' (alt)';
+      sel.appendChild(opt);
+    }
+  }
 
   // --- Rendern ---
   function render() {
@@ -454,16 +537,20 @@
 
     const list = tasks.filter(t =>
       (!fs || t.status === fs) &&
-      (!q || t.task.toLowerCase().includes(q) || t.owner.toLowerCase().includes(q))
+      (!q ||
+        String(t.task || '').toLowerCase().includes(q) ||
+        String(t.owner || '').toLowerCase().includes(q) ||
+        String(t.notes || '').toLowerCase().includes(q) ||
+        String(t.createdBy || '').toLowerCase().includes(q))
     );
 
     list.sort((a, b) => {
-      if (sort === 'prio')    return PRIO_RANK[a.prio] - PRIO_RANK[b.prio] || a.deadline.localeCompare(b.deadline);
-      if (sort === 'created') return b.created - a.created;
+      if (sort === 'prio')    return PRIO_RANK[a.prio] - PRIO_RANK[b.prio] || String(a.deadline).localeCompare(String(b.deadline));
+      if (sort === 'created') return (b.created || 0) - (a.created || 0);
       // Standard: erledigte Aufgaben nach unten, dann nach Deadline
       const doneA = a.status === 'erledigt', doneB = b.status === 'erledigt';
       if (doneA !== doneB) return doneA ? 1 : -1;
-      return a.deadline.localeCompare(b.deadline) || PRIO_RANK[a.prio] - PRIO_RANK[b.prio];
+      return String(a.deadline).localeCompare(String(b.deadline)) || PRIO_RANK[a.prio] - PRIO_RANK[b.prio];
     });
 
     body.innerHTML = list.map(t => {
@@ -471,21 +558,29 @@
       const options = Object.keys(STATUS_LABEL).map(k =>
         '<option value="' + k + '"' + (k === t.status ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>'
       ).join('');
+      const notes = t.notes
+        ? '<span class="task-notes" title="' + escapeHtml(t.notes) + '">' + escapeHtml(shorten(t.notes, 90)) + '</span>'
+        : '';
+      const rowCls = [t.status === 'erledigt' ? 'done' : '', t.id === editId ? 'editing' : ''].filter(Boolean).join(' ');
       return (
-        '<tr data-id="' + t.id + '" class="' + (t.status === 'erledigt' ? 'done' : '') + '">' +
-          '<td class="task">' + escapeHtml(t.task) + '</td>' +
-          '<td class="owner"><span class="avatar">' + escapeHtml(initials(t.owner)) + '</span>' + escapeHtml(t.owner) + '</td>' +
+        '<tr data-id="' + t.id + '" class="' + rowCls + '">' +
+          '<td class="task">' + escapeHtml(t.task) + notes + '</td>' +
+          '<td class="owner"><span class="avatar">' + escapeHtml(t.owner) + '</span></td>' +
+          '<td><span class="creator">' + escapeHtml(t.createdBy || '–') + '</span></td>' +
           '<td><select class="inline-status status-' + t.status + '" data-action="status" aria-label="Status ändern">' + options + '</select></td>' +
           '<td class="deadline ' + dl.cls + '">' + formatDate(t.deadline) + (dl.hint ? '<small>' + dl.hint + '</small>' : '') + '</td>' +
           '<td><span class="pill prio-' + t.prio + '">' + PRIO_LABEL[t.prio] + '</span></td>' +
-          '<td style="text-align:right"><button type="button" class="btn-delete" data-action="delete" title="Aufgabe löschen">🗑 Löschen</button></td>' +
+          '<td style="text-align:right;white-space:nowrap">' +
+            '<button type="button" class="btn-edit" data-action="edit" title="Aufgabe bearbeiten">✎ Bearbeiten</button>' +
+            '<button type="button" class="btn-delete" data-action="delete" title="Aufgabe löschen">🗑 Löschen</button>' +
+          '</td>' +
         '</tr>'
       );
     }).join('');
 
     $('emptyState').hidden = tasks.length > 0;
     if (tasks.length && !list.length) {
-      body.innerHTML = '<tr><td colspan="6" class="empty">Keine Aufgaben für diesen Filter.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="empty">Keine Aufgaben für diesen Filter.</td></tr>';
     }
 
     // Statistiken
@@ -496,42 +591,115 @@
     $('openCount').textContent = open + ' offen';
   }
 
+  // --- Formular: Modus wechseln ---
+  function setDefaultDeadline() {
+    const d = new Date(); d.setDate(d.getDate() + 7);
+    const pad = n => String(n).padStart(2, '0');
+    $('deadline').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function resetForm() {
+    editId = null;
+    form.reset();
+    $('owner').value = '';
+    $('prio').value = 'mittel';
+    $('status').value = 'offen';
+    $('notes').value = '';
+    setDefaultDeadline();
+    $('formTitle').textContent = 'Neue Aufgabe';
+    $('submitBtn').textContent = '＋ Aufgabe hinzufügen';
+    $('cancelEdit').hidden = true;
+    form.closest('.card').classList.remove('editing');
+    showError('');
+  }
+  function startEdit(id) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    editId = id;
+    $('task').value = t.task || '';
+    ensureOwnerOption(t.owner);
+    $('owner').value = t.owner || '';
+    $('status').value = t.status || 'offen';
+    $('prio').value = t.prio || 'mittel';
+    $('deadline').value = t.deadline || '';
+    $('notes').value = t.notes || '';
+    $('formTitle').textContent = 'Aufgabe bearbeiten';
+    $('submitBtn').textContent = '✓ Änderungen speichern';
+    $('cancelEdit').hidden = false;
+    form.closest('.card').classList.add('editing');
+    showError('');
+    render();
+    form.closest('.card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    $('task').focus();
+  }
+  function showError(msg) {
+    const el = $('formError');
+    el.textContent = msg || '';
+    el.classList.toggle('show', !!msg);
+  }
+
   // --- Ereignisse ---
   form.addEventListener('submit', e => {
     e.preventDefault();
     const task = $('task').value.trim();
-    const owner = $('owner').value.trim();
+    const owner = $('owner').value;
     const deadline = $('deadline').value;
+    const notes = $('notes').value.trim();
+
     if (!task || !owner || !deadline) {
-      $('formError').classList.add('show');
+      showError('Bitte Aufgabe, Zuständigkeit und Deadline ausfüllen.');
       return;
     }
-    $('formError').classList.remove('show');
-    tasks.push({
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      task: task,
-      owner: owner,
-      deadline: deadline,
-      status: $('status').value,
-      prio: $('prio').value,
-      created: Date.now()
-    });
-    save(); render();
-    form.reset();
-    $('prio').value = 'mittel';
-    setDefaultDeadline();
+
+    if (editId) {
+      const t = tasks.find(x => x.id === editId);
+      if (t) {
+        t.task = task; t.owner = owner; t.deadline = deadline; t.notes = notes;
+        t.status = $('status').value; t.prio = $('prio').value;
+      }
+    } else {
+      const me = $('currentUser').value;
+      if (!me) {
+        showError('Bitte oben rechts dein Kürzel auswählen, damit vermerkt wird, wer die Aufgabe einstellt.');
+        markUserPick();
+        $('currentUser').focus();
+        return;
+      }
+      tasks.push({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        task: task,
+        owner: owner,
+        deadline: deadline,
+        status: $('status').value,
+        prio: $('prio').value,
+        notes: notes,
+        createdBy: me,
+        created: Date.now()
+      });
+    }
+
+    save();
+    resetForm();
+    render();
     $('task').focus();
   });
 
-  // Löschen einer einzelnen Aufgabe
+  $('cancelEdit').addEventListener('click', () => { resetForm(); render(); });
+
+  // Bearbeiten und Löschen in der Tabelle
   body.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action="delete"]');
-    if (!btn) return;
-    const id = btn.closest('tr').dataset.id;
-    const t = tasks.find(x => x.id === id);
-    if (t && confirm('Aufgabe „' + t.task + '“ wirklich löschen?')) {
-      tasks = tasks.filter(x => x.id !== id);
-      save(); render();
+    const row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    const id = row.dataset.id;
+
+    if (e.target.closest('[data-action="edit"]')) { startEdit(id); return; }
+
+    if (e.target.closest('[data-action="delete"]')) {
+      const t = tasks.find(x => x.id === id);
+      if (t && confirm('Aufgabe „' + t.task + '“ wirklich löschen?')) {
+        tasks = tasks.filter(x => x.id !== id);
+        if (editId === id) resetForm();
+        save(); render();
+      }
     }
   });
 
@@ -548,22 +716,25 @@
     const n = tasks.filter(t => t.status === 'erledigt').length;
     if (!n) return;
     if (confirm(n + (n === 1 ? ' erledigte Aufgabe' : ' erledigte Aufgaben') + ' löschen?')) {
+      const removed = tasks.filter(t => t.status === 'erledigt').map(t => t.id);
       tasks = tasks.filter(t => t.status !== 'erledigt');
+      if (removed.indexOf(editId) !== -1) resetForm();
       save(); render();
     }
   });
 
+  $('currentUser').addEventListener('change', e => {
+    saveUser(e.target.value);
+    markUserPick();
+    showError('');
+  });
+
   ['search', 'filterStatus', 'sortBy'].forEach(id => $(id).addEventListener('input', render));
 
-  // Deadline standardmäßig auf heute + 7 Tage
-  function setDefaultDeadline() {
-    const d = new Date(); d.setDate(d.getDate() + 7);
-    const pad = n => String(n).padStart(2, '0');
-    $('deadline').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  }
-  setDefaultDeadline();
+  // --- Start ---
+  fillPeopleSelects();
+  resetForm();
   $('year').textContent = new Date().getFullYear();
-
   render();
 })();
 </script>

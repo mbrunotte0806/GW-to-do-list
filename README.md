@@ -8,11 +8,13 @@ Einfache, moderne Team-Aufgabenliste für Grunwald Flächenheizsysteme als einze
 
 ## Funktionen
 
-- Aufgaben anlegen mit Aufgabe, Zuständigkeit, Status (offen / in Bearbeitung / erledigt), Deadline und Priorität (hoch / mittel / niedrig)
+- Aufgaben anlegen mit Aufgabe, Zuständigkeit, Status (offen / in Bearbeitung / erledigt), Deadline, Priorität (hoch / mittel / niedrig) und Notizen
+- Zuständigkeit als Auswahl der Team-Kürzel: CH, JB, JBS, MB, NW
+- Oben rechts wählt man das eigene Kürzel. Es wird im Browser gemerkt und bei neuen Aufgaben als "Erfasst von" vermerkt
 - Übersichtliche Tabelle mit farbigen Status- und Prio-Kennzeichnungen
-- Status direkt in der Tabelle ändern
+- Aufgaben vollständig bearbeiten, Status zusätzlich direkt in der Tabelle ändern
 - Aufgaben einzeln löschen oder alle erledigten Aufgaben auf einmal entfernen
-- Suche, Statusfilter und Sortierung (Deadline, Priorität, Erstellungsdatum)
+- Suche über Aufgabe, Zuständigkeit, Notizen und Erfasser, dazu Statusfilter und Sortierung (Deadline, Priorität, Erstellungsdatum)
 - Überfällige und bald fällige Deadlines werden hervorgehoben
 - Kennzahlen: Gesamt, In Bearbeitung, Erledigt
 - Speicherung im Browser (localStorage), Daten bleiben nach dem Neuladen erhalten
