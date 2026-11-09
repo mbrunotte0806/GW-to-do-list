@@ -100,9 +100,11 @@
 
   /* ---------- Layout ---------- */
   main { flex: 1; padding: 36px 0 48px; }
-  .page-title { margin-bottom: 24px; }
+  .page-title {
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
   .page-title h1 { font-size: 28px; font-weight: 700; color: var(--navy); }
-  .page-title p { color: var(--text-muted); margin-top: 6px; }
 
   .grid { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
   .grid > * { min-width: 0; }
@@ -319,9 +321,6 @@
       </span>
     </a>
     <div class="header-right">
-      <label class="user-pick" id="userPick" for="currentUser">Ich bin
-        <select id="currentUser" title="Kürzel für neu erfasste Aufgaben"></select>
-      </label>
       <span class="badge-count" id="openCount">0 offen</span>
     </div>
   </div>
@@ -330,14 +329,16 @@
 <main>
   <div class="inner">
     <div class="page-title">
-      <h1>Team-Aufgabenliste</h1>
-      <p>Aufgaben erfassen, zuweisen und den Fortschritt im Blick behalten.</p>
+      <h1>Grunwald ToDo-Liste</h1>
+      <label class="user-pick" id="userPick" for="currentUser">Ich bin
+        <select id="currentUser" title="Kürzel für neu erfasste Aufgaben"></select>
+      </label>
     </div>
 
     <div class="grid">
       <!-- Formular -->
       <section class="card">
-        <div class="card-head"><h2 id="formTitle">Neue Aufgabe</h2></div>
+        <div class="card-head" id="formHead" hidden><h2 id="formTitle">Aufgabe bearbeiten</h2></div>
         <div class="card-body">
           <form id="taskForm" novalidate>
             <div class="field">
@@ -605,7 +606,7 @@
     $('status').value = 'offen';
     $('notes').value = '';
     setDefaultDeadline();
-    $('formTitle').textContent = 'Neue Aufgabe';
+    $('formHead').hidden = true;
     $('submitBtn').textContent = '＋ Aufgabe hinzufügen';
     $('cancelEdit').hidden = true;
     form.closest('.card').classList.remove('editing');
@@ -622,7 +623,7 @@
     $('prio').value = t.prio || 'mittel';
     $('deadline').value = t.deadline || '';
     $('notes').value = t.notes || '';
-    $('formTitle').textContent = 'Aufgabe bearbeiten';
+    $('formHead').hidden = false;
     $('submitBtn').textContent = '✓ Änderungen speichern';
     $('cancelEdit').hidden = false;
     form.closest('.card').classList.add('editing');
